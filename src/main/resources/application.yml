@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: apparel-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rockmission_apparel}
+    username: ${DB_USER:apparel}
+    password: ${DB_PASSWORD:apparel}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+payfast:
+  merchant-id: ${PAYFAST_MERCHANT_ID:10000100}
+  merchant-key: ${PAYFAST_MERCHANT_KEY:46f0cd694581a}
+  passphrase: ${PAYFAST_PASSPHRASE:}
+  sandbox: ${PAYFAST_SANDBOX:true}
+  return-url: ${PAYFAST_RETURN_URL:${app.frontend-url}/order/success}
+  cancel-url: ${PAYFAST_CANCEL_URL:${app.frontend-url}/order/cancel}
+  notify-url: ${PAYFAST_NOTIFY_URL:http://localhost:8080/api/payfast/notify}
+
+printful:
+  enabled: ${PRINTFUL_ENABLED:false}
+  api-key: ${PRINTFUL_API_KEY:}
+  api-base-url: ${PRINTFUL_API_BASE_URL:https://api.printful.com}
