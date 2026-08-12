@@ -19,7 +19,7 @@ it can be extracted cleanly later — without paying that complexity tax now.
 
 - Spring Boot 3.5 / Java 21
 - PostgreSQL + Flyway migrations
-- No auth layer yet — all endpoints are public (storefront browsing + checkout don't require login)
+- JWT-based optional customer auth for account features
 
 ## Getting started
 
@@ -34,6 +34,10 @@ seeds the product catalog on startup.
 
 ## API
 
+- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` — optional customer account auth
+- `POST /api/auth/forgot-password`, `POST /api/auth/reset-password` — password recovery flow
+- `POST /api/auth/forgot-username` — returns a generic account-recovery response (sign-in ID is email)
+
 - `GET /api/products` / `GET /api/products/{id}` — catalog (seeded from `V2__seed_products.sql`, kept in sync
   with `src/data/products.js` in the storefront)
 - `POST /api/orders` — creates an order from cart contents + customer details, **re-prices every line item from
@@ -42,6 +46,12 @@ seeds the product catalog on startup.
 - `POST /api/payfast/notify` — PayFast's ITN (Instant Transaction Notification) webhook. Verifies the request's
   signature, performs PayFast's required server-to-server validation round-trip, checks the paid amount against
   the order total, then marks the order `PAID` and hands it to `PrintfulService`
+
+## Auth Recovery Config
+
+- `AUTH_RESET_TOKEN_MINUTES` — reset token TTL in minutes (default `30`)
+- `AUTH_EXPOSE_RESET_TOKEN` — include raw reset token/reset URL in forgot-password response for local testing (default `false`)
+- `AUTH_RESET_BASE_URL` — base URL used when generating reset URL in exposed response mode (default `${FRONTEND_URL}/reset-password`)
 
 ## What's still needed before this can go live
 

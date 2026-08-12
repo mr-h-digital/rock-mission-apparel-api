@@ -23,6 +23,10 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   jwt-secret: ${AUTH_JWT_SECRET:change-this-in-production-to-a-long-random-secret-at-least-32-characters}
   jwt-expiry-hours: ${AUTH_JWT_EXPIRY_HOURS:72}
+  auth:
+    reset-token-minutes: ${AUTH_RESET_TOKEN_MINUTES:30}
+    expose-reset-token: ${AUTH_EXPOSE_RESET_TOKEN:false}
+    reset-base-url: ${AUTH_RESET_BASE_URL:${app.frontend-url}/reset-password}
 
 payfast:
   merchant-id: ${PAYFAST_MERCHANT_ID:10000100}

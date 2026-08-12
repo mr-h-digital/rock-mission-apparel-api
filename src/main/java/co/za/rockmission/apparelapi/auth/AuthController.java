@@ -1,11 +1,17 @@
 package co.za.rockmission.apparelapi.auth;
 
 import co.za.rockmission.apparelapi.auth.dto.AuthResponse;
+import co.za.rockmission.apparelapi.auth.dto.ForgotPasswordRequest;
+import co.za.rockmission.apparelapi.auth.dto.ForgotPasswordResponse;
+import co.za.rockmission.apparelapi.auth.dto.ForgotUsernameRequest;
 import co.za.rockmission.apparelapi.auth.dto.LoginRequest;
 import co.za.rockmission.apparelapi.auth.dto.RegisterRequest;
+import co.za.rockmission.apparelapi.auth.dto.ResetPasswordRequest;
 import co.za.rockmission.apparelapi.auth.dto.UserResponse;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +34,26 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/forgot-password")
+    public ForgotPasswordResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return authService.forgotPassword(request);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(Map.of("message", "Password reset successful. Please sign in."));
+    }
+
+    @PostMapping("/forgot-username")
+    public ResponseEntity<Map<String, String>> forgotUsername(@Valid @RequestBody ForgotUsernameRequest request) {
+        authService.forgotUsername(request);
+        return ResponseEntity.ok(Map.of(
+                "message",
+                "If an account exists for this email, sign-in details have been prepared."
+        ));
     }
 
     @GetMapping("/me")
