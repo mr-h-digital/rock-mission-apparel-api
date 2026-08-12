@@ -7,6 +7,7 @@ import co.za.rockmission.apparelapi.auth.dto.ForgotUsernameRequest;
 import co.za.rockmission.apparelapi.auth.dto.LoginRequest;
 import co.za.rockmission.apparelapi.auth.dto.RegisterRequest;
 import co.za.rockmission.apparelapi.auth.dto.ResetPasswordRequest;
+import co.za.rockmission.apparelapi.auth.dto.UpdateProfileRequest;
 import co.za.rockmission.apparelapi.auth.dto.UserResponse;
 import co.za.rockmission.apparelapi.common.BadRequestException;
 import co.za.rockmission.apparelapi.common.UnauthorizedException;
@@ -84,6 +85,32 @@ public class AuthService {
         return UserResponse.from(user);
     }
 
+    public UserResponse updateProfile(String bearerToken, UpdateProfileRequest request) {
+        UUID userId = jwtService.parseUserId(extractBearerToken(bearerToken));
+
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new UnauthorizedException("Account no longer exists."));
+
+        String email = normalizeEmail(request.email());
+        if (!email.equalsIgnoreCase(user.getEmail()) && appUserRepository.existsByEmailIgnoreCase(email)) {
+            throw new BadRequestException("An account with this email already exists.");
+        }
+
+        user.setFirstName(request.firstName().trim());
+        user.setLastName(request.lastName().trim());
+        user.setEmail(email);
+        user.setPhone(normalizeOptional(request.phone()));
+        user.setAddressLine1(normalizeOptional(request.addressLine1()));
+        user.setAddressLine2(normalizeOptional(request.addressLine2()));
+        user.setCity(normalizeOptional(request.city()));
+        user.setProvince(normalizeOptional(request.province()));
+        user.setPostalCode(normalizeOptional(request.postalCode()));
+        user.setCountry(normalizeOptional(request.country()));
+        user.touch();
+
+        return UserResponse.from(appUserRepository.save(user));
+    }
+
     public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
         String email = normalizeEmail(request.email());
 
@@ -151,6 +178,12 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private void revokeOutstandingResetTokens(AppUser user) {

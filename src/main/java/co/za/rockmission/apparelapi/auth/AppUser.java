@@ -30,6 +30,20 @@ public class AppUser {
     @Column(nullable = false)
     private String passwordHash;
 
+    private String phone;
+
+    private String addressLine1;
+
+    private String addressLine2;
+
+    private String city;
+
+    private String province;
+
+    private String postalCode;
+
+    private String country;
+
     private Instant createdAt = Instant.now();
 
     private Instant updatedAt = Instant.now();

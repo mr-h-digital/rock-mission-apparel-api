@@ -7,6 +7,7 @@ import co.za.rockmission.apparelapi.auth.dto.ForgotUsernameRequest;
 import co.za.rockmission.apparelapi.auth.dto.LoginRequest;
 import co.za.rockmission.apparelapi.auth.dto.RegisterRequest;
 import co.za.rockmission.apparelapi.auth.dto.ResetPasswordRequest;
+import co.za.rockmission.apparelapi.auth.dto.UpdateProfileRequest;
 import co.za.rockmission.apparelapi.auth.dto.UserResponse;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,5 +61,12 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         return authService.me(authorizationHeader);
+    }
+
+    @PutMapping("/me")
+    public UserResponse updateProfile(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return authService.updateProfile(authorizationHeader, request);
     }
 }
