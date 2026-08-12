@@ -16,7 +16,7 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDto> list() {
-        return productRepository.findByActiveTrue().stream().map(ProductDto::from).toList();
+        return productRepository.findByActiveTrueOrderByNameAsc().stream().map(ProductDto::from).toList();
     }
 
     @GetMapping("/{id}")
