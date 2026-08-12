@@ -1,7 +1,7 @@
-# Rock Mission Apparel — API
+# Kingdom Drip — API
 
-Backend for the Rock Mission Apparel Christian streetwear store: product catalog, order creation, PayFast
-checkout, and print-on-demand fulfillment handoff.
+Backend for Kingdom Drip, Rock Mission Ministries' Christian streetwear store: product catalog, order creation,
+PayFast checkout, and print-on-demand fulfillment handoff.
 
 Serves [`rock-mission-apparel-web`](https://github.com/mr-h-digital/rock-mission-apparel-web).
 

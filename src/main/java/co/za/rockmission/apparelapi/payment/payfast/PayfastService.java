@@ -36,7 +36,7 @@ public class PayfastService {
         fields.put("email_address", order.getEmail());
         fields.put("m_payment_id", order.getId().toString());
         fields.put("amount", formatAmount(order.getTotalAmount()));
-        fields.put("item_name", "Rock Mission Apparel Order");
+        fields.put("item_name", "Kingdom Drip Order");
 
         String signature = signature(fields, properties.passphrase());
         fields.put("signature", signature);
