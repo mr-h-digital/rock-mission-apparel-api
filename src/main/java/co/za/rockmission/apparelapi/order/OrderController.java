@@ -1,15 +1,20 @@
 package co.za.rockmission.apparelapi.order;
 
 import co.za.rockmission.apparelapi.common.BadRequestException;
+import co.za.rockmission.apparelapi.common.NotFoundException;
 import co.za.rockmission.apparelapi.order.dto.CreateOrderRequest;
 import co.za.rockmission.apparelapi.order.dto.CreateOrderResponse;
 import co.za.rockmission.apparelapi.order.dto.OrderItemRequest;
+import co.za.rockmission.apparelapi.order.dto.OrderStatusResponse;
 import co.za.rockmission.apparelapi.payment.payfast.PayfastProperties;
 import co.za.rockmission.apparelapi.payment.payfast.PayfastService;
 import co.za.rockmission.apparelapi.product.Product;
 import co.za.rockmission.apparelapi.product.ProductRepository;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,5 +71,13 @@ public class OrderController {
 
         var fields = payfastService.buildPaymentFields(order);
         return new CreateOrderResponse(order.getId(), payfastProperties.processUrl(), fields);
+    }
+
+    @GetMapping("/{orderId}/status")
+    public OrderStatusResponse status(@PathVariable UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
+
+        return OrderStatusResponse.from(order);
     }
 }

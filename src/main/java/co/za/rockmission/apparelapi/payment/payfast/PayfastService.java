@@ -28,8 +28,8 @@ public class PayfastService {
         LinkedHashMap<String, String> fields = new LinkedHashMap<>();
         fields.put("merchant_id", properties.merchantId());
         fields.put("merchant_key", properties.merchantKey());
-        fields.put("return_url", properties.returnUrl());
-        fields.put("cancel_url", properties.cancelUrl());
+        fields.put("return_url", appendOrderId(properties.returnUrl(), order));
+        fields.put("cancel_url", appendOrderId(properties.cancelUrl(), order));
         fields.put("notify_url", properties.notifyUrl());
         fields.put("name_first", order.getFirstName());
         fields.put("name_last", order.getLastName());
@@ -45,6 +45,11 @@ public class PayfastService {
 
     private String formatAmount(BigDecimal amount) {
         return amount.setScale(2, java.math.RoundingMode.HALF_UP).toString();
+    }
+
+    private String appendOrderId(String baseUrl, Order order) {
+        String separator = baseUrl.contains("?") ? "&" : "?";
+        return baseUrl + separator + "orderId=" + urlEncode(order.getId().toString());
     }
 
     /** Signature for an outgoing payment request: our own fields, in insertion order. */
