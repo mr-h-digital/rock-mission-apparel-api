@@ -24,6 +24,13 @@ app:
   admin-emails: ${ADMIN_EMAILS:}
   jwt-secret: ${AUTH_JWT_SECRET:change-this-in-production-to-a-long-random-secret-at-least-32-characters}
   jwt-expiry-hours: ${AUTH_JWT_EXPIRY_HOURS:72}
+  storage:
+    endpoint-url: ${STORAGE_ENDPOINT_URL:}
+    region: ${STORAGE_REGION:}
+    bucket-name: ${STORAGE_BUCKET_NAME:}
+    access-key-id: ${STORAGE_ACCESS_KEY_ID:}
+    secret-access-key: ${STORAGE_SECRET_ACCESS_KEY:}
+    public-base-url: ${STORAGE_PUBLIC_BASE_URL:}
   auth:
     reset-token-minutes: ${AUTH_RESET_TOKEN_MINUTES:30}
     expose-reset-token: ${AUTH_EXPOSE_RESET_TOKEN:false}
