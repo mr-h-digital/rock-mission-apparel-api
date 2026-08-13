@@ -97,7 +97,7 @@ public class StorageService {
     private String buildPublicUrl(String objectKey) {
         String publicBaseUrl = storageProperties.publicBaseUrl();
         if (publicBaseUrl != null && !publicBaseUrl.isBlank()) {
-            return joinUrl(publicBaseUrl, objectKey);
+            return joinUrl(normalizeBaseUrl(publicBaseUrl), objectKey);
         }
 
         return joinUrl(requireConfigured(storageProperties.endpointUrl(), "STORAGE_ENDPOINT_URL"),
@@ -105,15 +105,33 @@ public class StorageService {
                 objectKey);
     }
 
+    private String normalizeBaseUrl(String value) {
+        String trimmed = value.trim();
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            return trimmed;
+        }
+        return "https://" + trimmed;
+    }
+
     private String joinUrl(String... parts) {
         StringBuilder url = new StringBuilder();
-        for (String part : parts) {
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
             if (part == null || part.isBlank()) continue;
             String normalized = part.trim();
+
+            // Keep the scheme on the first URL segment (e.g. https://host)
+            // while still trimming extra slashes around path segments.
+            if (i == 0) {
+                normalized = normalized.replaceAll("/+$", "");
+            } else {
+                normalized = normalized.replaceAll("^/+|/+$", "");
+            }
+
             if (url.length() > 0 && url.charAt(url.length() - 1) != '/') {
                 url.append('/');
             }
-            url.append(normalized.replaceAll("^/+|/+$", ""));
+            url.append(normalized);
         }
         return url.toString();
     }
