@@ -59,6 +59,15 @@ public class InventoryService {
         });
     }
 
+    @Transactional
+    public void restore(Order order) {
+        order.getItems().forEach(item -> {
+            ProductInventory inventory = lockVariantIfTracked(item);
+            if (inventory == null) return;
+            inventory.setStockOnHand(inventory.getStockOnHand() + item.getQty());
+        });
+    }
+
     @Scheduled(fixedDelay = 900000, initialDelay = 900000)
     @Transactional
     public void expireStaleReservations() {
