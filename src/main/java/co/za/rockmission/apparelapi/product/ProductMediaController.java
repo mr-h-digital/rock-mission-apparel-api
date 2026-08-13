@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProductMediaController {
 
+    private static final MediaType WEBP_MEDIA_TYPE = MediaType.parseMediaType("image/webp");
+
     private final StorageService storageService;
 
     @GetMapping("/products/{filename:.+}")
@@ -26,15 +28,15 @@ public class ProductMediaController {
         MediaType mediaType;
         try {
             mediaType = image.contentType() == null || image.contentType().isBlank()
-                    ? MediaType.IMAGE_WEBP
+                    ? WEBP_MEDIA_TYPE
                     : MediaType.parseMediaType(image.contentType());
         } catch (IllegalArgumentException ex) {
-            mediaType = MediaType.IMAGE_WEBP;
+            mediaType = WEBP_MEDIA_TYPE;
         }
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
-                .header(HttpHeaders.X_CONTENT_TYPE_OPTIONS, "nosniff")
+                .header("X-Content-Type-Options", "nosniff")
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
                 .body(image.content());
     }
