@@ -1,6 +1,7 @@
 package co.za.rockmission.apparelapi.storage;
 
 import co.za.rockmission.apparelapi.common.BadRequestException;
+import co.za.rockmission.apparelapi.common.NotFoundException;
 import co.za.rockmission.apparelapi.config.StorageProperties;
 import java.io.IOException;
 import java.net.URI;
@@ -15,7 +16,10 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class StorageService {
@@ -53,6 +57,37 @@ public class StorageService {
         }
 
         return new UploadedFile(buildPublicUrl(objectKey), objectKey);
+    }
+
+    public StoredObject getProductImage(String filename) {
+        if (filename == null || filename.isBlank()) {
+            throw new NotFoundException("Image not found.");
+        }
+
+        String safeName = filename.trim();
+        if (!safeName.matches("^[A-Za-z0-9._-]+$")) {
+            throw new NotFoundException("Image not found.");
+        }
+
+        String objectKey = "products/" + safeName;
+
+        try (var input = s3Client.getObject(GetObjectRequest.builder()
+                .bucket(requireConfigured(storageProperties.bucketName(), "STORAGE_BUCKET_NAME"))
+                .key(objectKey)
+                .build())) {
+            byte[] content = input.readAllBytes();
+            String contentType = input.response().contentType();
+            return new StoredObject(content, contentType);
+        } catch (NoSuchKeyException ex) {
+            throw new NotFoundException("Image not found.");
+        } catch (S3Exception ex) {
+            if (ex.statusCode() == 404) {
+                throw new NotFoundException("Image not found.");
+            }
+            throw new IllegalStateException("Unable to load product image from storage.");
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to read product image from storage.");
+        }
     }
 
     private S3Client buildClient(StorageProperties properties) {
@@ -144,5 +179,8 @@ public class StorageService {
     }
 
     public record UploadedFile(String url, String key) {
+    }
+
+    public record StoredObject(byte[] content, String contentType) {
     }
 }

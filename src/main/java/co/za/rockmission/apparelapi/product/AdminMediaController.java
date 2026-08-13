@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/admin/uploads")
@@ -37,7 +38,15 @@ public class AdminMediaController {
             @RequestParam("file") MultipartFile file) {
         requireAdmin(authorizationHeader);
         StorageService.UploadedFile uploadedFile = storageService.uploadProductImage(file);
-        return Map.of("url", uploadedFile.url(), "key", uploadedFile.key());
+
+        String key = uploadedFile.key();
+        String filename = key.substring(key.lastIndexOf('/') + 1);
+        String proxyUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/media/products/")
+            .path(filename)
+            .toUriString();
+
+        return Map.of("url", proxyUrl, "key", key);
     }
 
     private void requireAdmin(String authorizationHeader) {
