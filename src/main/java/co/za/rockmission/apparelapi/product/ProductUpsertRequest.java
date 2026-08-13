@@ -18,6 +18,7 @@ public record ProductUpsertRequest(
         String word,
         @NotEmpty List<@NotBlank String> sizes,
         @NotEmpty List<@NotBlank String> colors,
+        List<@jakarta.validation.Valid ProductInventoryRequest> inventory,
         boolean active
 ) {
 }

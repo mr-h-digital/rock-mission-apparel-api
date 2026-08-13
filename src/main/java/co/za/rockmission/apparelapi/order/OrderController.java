@@ -8,6 +8,8 @@ import co.za.rockmission.apparelapi.order.dto.OrderItemRequest;
 import co.za.rockmission.apparelapi.order.dto.OrderStatusResponse;
 import co.za.rockmission.apparelapi.payment.payfast.PayfastProperties;
 import co.za.rockmission.apparelapi.payment.payfast.PayfastService;
+import co.za.rockmission.apparelapi.product.InventoryService;
+import jakarta.transaction.Transactional;
 import co.za.rockmission.apparelapi.product.Product;
 import co.za.rockmission.apparelapi.product.ProductRepository;
 import jakarta.validation.Valid;
@@ -30,8 +32,10 @@ public class OrderController {
     private final OrderRepository orderRepository;
     private final PayfastService payfastService;
     private final PayfastProperties payfastProperties;
+    private final InventoryService inventoryService;
 
     @PostMapping
+    @Transactional
     public CreateOrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
         Order order = new Order();
         order.setFirstName(request.customer().firstName());
@@ -67,6 +71,7 @@ public class OrderController {
         }
         order.setTotalAmount(total);
 
+        inventoryService.reserve(order);
         orderRepository.save(order);
 
         var fields = payfastService.buildPaymentFields(order);

@@ -4,6 +4,8 @@ import co.za.rockmission.apparelapi.fulfillment.PrintfulService;
 import co.za.rockmission.apparelapi.order.Order;
 import co.za.rockmission.apparelapi.order.OrderRepository;
 import co.za.rockmission.apparelapi.order.OrderStatus;
+import co.za.rockmission.apparelapi.product.InventoryService;
+import jakarta.transaction.Transactional;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -38,9 +40,11 @@ public class PayfastController {
     private final PayfastProperties properties;
     private final OrderRepository orderRepository;
     private final PrintfulService printfulService;
+    private final InventoryService inventoryService;
     private final RestClient.Builder restClientBuilder;
 
     @PostMapping(path = "/notify", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Transactional
     public ResponseEntity<Void> notify(HttpServletRequest request) throws IOException {
         String rawBody = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         Map<String, String> params = payfastService.parseFormBody(rawBody);
@@ -79,7 +83,10 @@ public class PayfastController {
         BigDecimal grossAmount = parseAmount(params.get("amount_gross"));
 
         if (!"COMPLETE".equals(paymentStatus)) {
-            order.setStatus(OrderStatus.FAILED);
+            if (order.getStatus() == OrderStatus.PENDING) {
+                inventoryService.release(order);
+                order.setStatus(OrderStatus.FAILED);
+            }
             order.setPayfastPaymentId(params.get("pf_payment_id"));
             order.touch();
             orderRepository.save(order);
@@ -95,6 +102,7 @@ public class PayfastController {
             return ResponseEntity.badRequest().build();
         }
 
+        inventoryService.commit(order);
         order.setStatus(OrderStatus.PAID);
         order.setPayfastPaymentId(params.get("pf_payment_id"));
         order.touch();

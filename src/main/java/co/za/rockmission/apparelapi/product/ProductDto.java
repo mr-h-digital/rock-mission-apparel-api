@@ -14,6 +14,7 @@ public record ProductDto(
         String word,
         List<String> sizes,
         List<String> colors,
+        List<ProductInventoryDto> inventory,
         boolean active) {
 
     static ProductDto from(Product product) {
@@ -28,6 +29,7 @@ public record ProductDto(
                 product.getWord(),
                 csvToList(product.getSizesCsv()),
                 csvToList(product.getColorsCsv()),
+                product.getInventory().stream().map(ProductInventoryDto::from).toList(),
                 product.isActive()
         );
     }

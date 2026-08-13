@@ -8,8 +8,12 @@ import co.za.rockmission.apparelapi.common.NotFoundException;
 import co.za.rockmission.apparelapi.common.UnauthorizedException;
 import jakarta.validation.Valid;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -105,6 +109,48 @@ public class AdminProductController {
         product.setSizesCsv(listToCsv(request.sizes()));
         product.setColorsCsv(listToCsv(request.colors()));
         product.setActive(request.active());
+        applyInventory(product, request.inventory());
+    }
+
+    private void applyInventory(Product product, List<ProductInventoryRequest> requests) {
+        Map<String, ProductInventory> existing = new HashMap<>();
+        product.getInventory().forEach(item -> existing.put(inventoryKey(item.getSize(), item.getColor()), item));
+
+        Set<String> requestedKeys = new HashSet<>();
+        if (requests != null) {
+            requests.forEach(request -> {
+                String key = inventoryKey(request.size(), request.color());
+                if (!requestedKeys.add(key)) {
+                    throw new BadRequestException("Duplicate inventory variant: " + request.size() + "/" + request.color());
+                }
+            });
+        }
+
+        product.getInventory().removeIf(item -> requests == null || requests.stream()
+            .noneMatch(request -> inventoryKey(request.size(), request.color()).equals(inventoryKey(item.getSize(), item.getColor()))));
+
+        if (requests == null) return;
+
+        requests.forEach(request -> {
+            String size = request.size().trim();
+            String color = request.color().trim();
+            ProductInventory inventory = existing.get(inventoryKey(size, color));
+            if (inventory == null) {
+                inventory = new ProductInventory();
+                inventory.setProduct(product);
+                inventory.setSize(size);
+                inventory.setColor(color);
+                product.getInventory().add(inventory);
+            }
+            if (request.quantity() < inventory.getReservedQuantity()) {
+                throw new BadRequestException("Stock for " + size + "/" + color + " cannot be lower than reserved stock.");
+            }
+            inventory.setStockOnHand(request.quantity());
+        });
+    }
+
+    private String inventoryKey(String size, String color) {
+        return size.trim().toLowerCase(Locale.ROOT) + "\u0000" + color.trim().toLowerCase(Locale.ROOT);
     }
 
     private String listToCsv(List<String> values) {
