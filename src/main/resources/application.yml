@@ -20,6 +20,8 @@ server:
   port: ${PORT:8080}
 
 app:
+  # Comma-separated allowed frontend origins/patterns for CORS, e.g.
+  # FRONTEND_URL=https://shop.rockmission.co.za,https://*.rockmission.co.za
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   admin-emails: ${ADMIN_EMAILS:}
   jwt-secret: ${AUTH_JWT_SECRET:change-this-in-production-to-a-long-random-secret-at-least-32-characters}
