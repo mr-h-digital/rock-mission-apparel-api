@@ -17,13 +17,15 @@ public record ProductDto(
         List<ProductInventoryDto> inventory,
         boolean active) {
 
+    private static final String PUBLIC_API_HOST = "store-api.rockmission.co.za";
+
     static ProductDto from(Product product) {
         return new ProductDto(
                 product.getId(),
                 product.getName(),
                 product.getCategory(),
                 product.getPrice(),
-                product.getImageUrl(),
+                normalizeImageUrl(product.getImageUrl()),
                 product.getBlurb(),
                 product.getArt(),
                 product.getWord(),
@@ -32,6 +34,11 @@ public record ProductDto(
                 product.getInventory().stream().map(ProductInventoryDto::from).toList(),
                 product.isActive()
         );
+    }
+
+    private static String normalizeImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) return imageUrl;
+        return imageUrl.replaceFirst("^http://" + PUBLIC_API_HOST + "(?=/|$)", "https://" + PUBLIC_API_HOST);
     }
 
     private static List<String> csvToList(String csv) {
